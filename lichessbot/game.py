@@ -42,13 +42,13 @@ class Game:
 
         # Skip the confirmation event
         next(self.stream)
-        logger.info(move)
 
     def _run(self):
         if self.color == chess.WHITE:
             # We go first; make a move
             self.move()
         for event in self.stream:
+            logger.info(f'Event: {event}')
             if event.get('status') == 'started':
                 last_move = event['moves'].split()[-1]
                 self.board.push_uci(last_move)
@@ -56,7 +56,6 @@ class Game:
             elif 'winner' in event:
                 # Game is over
                 break
-            logger.info(event)
 
     def run(self):
         try:

@@ -1,5 +1,5 @@
 import threading
-import berserk.exceptions
+import berserk
 import stockfish
 import logging
 import chess
@@ -34,6 +34,7 @@ class ChessBot:
             threading.Thread(target=game.run).start()
 
     def run(self):
+        logger.info(f'{self.__class__.__name__} started.')
         events = self.client.bots.stream_incoming_events()
         for event in events:
             logger.info(event)
