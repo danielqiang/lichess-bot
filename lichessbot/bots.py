@@ -1,9 +1,10 @@
 import threading
-import berserk
+import berserk.exceptions
 import stockfish
 import logging
 import chess
 import random
+
 from .game import Game
 
 logger = logging.getLogger(__name__)
