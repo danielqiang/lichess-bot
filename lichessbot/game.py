@@ -1,13 +1,16 @@
 import berserk
 import chess
 import logging
+
 from typing import Callable
-from .decorators import retry_on_exception
+from . import retry
 
 logger = logging.getLogger(__name__)
 
 
 class Game:
+    """A chess game on lichess.org"""
+
     def __init__(self,
                  client: berserk.Client,
                  user_id: str,
@@ -33,8 +36,9 @@ class Game:
         move = chess.Move.from_uci(move)
         return self.board.san(move)
 
-    @retry_on_exception(exc=(berserk.exceptions.ApiError, IOError),
-                        logger=logger)
+    from berserk.exceptions import ApiError
+
+    @retry.on_exception(exc=(ApiError, IOError), logger=logger)
     def move(self):
         move = self.select_move(self.board)
         self.board.push_uci(move)
@@ -43,12 +47,15 @@ class Game:
         # Skip the confirmation event
         next(self.stream)
 
+    def resign(self):
+        self.client.bots.resign_game(self.game_id)
+
     def _run(self):
         if self.color == chess.WHITE:
             # We go first; make a move
             self.move()
         for event in self.stream:
-            logger.info(f'Event: {event}')
+            logger.info(event)
             if event.get('status') == 'started':
                 last_move = event['moves'].split()[-1]
                 self.board.push_uci(last_move)
@@ -61,5 +68,5 @@ class Game:
         try:
             self._run()
         except Exception:
-            self.client.bots.resign_game(self.game_id)
+            self.resign()
             raise

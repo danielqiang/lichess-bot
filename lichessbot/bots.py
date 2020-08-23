@@ -5,26 +5,36 @@ import logging
 import chess
 import random
 
+from typing import Generator
 from .game import Game
 
 logger = logging.getLogger(__name__)
 
 
 class ChessBot:
+    """Base class for all chess bots. Must override
+    select_move() in subclass.
+    """
     def __init__(self, api_key: str):
         session = berserk.TokenSession(api_key)
         self.client = berserk.Client(session)
         self.user_id = self.client.account.get()['id']
 
+    def accept_challenge(self, challenge_id):
+        self.client.bots.accept_challenge(challenge_id)
+
     def select_move(self, board: chess.Board) -> str:
         """chess.Board object -> UCI move string"""
         raise NotImplementedError
+
+    def _events(self) -> Generator[dict]:
+        yield from self.client.bots.stream_incoming_events()
 
     def _handle_event(self, event):
         if event['type'] == 'challenge':
             logger.info("Accepting challenge!")
             challenge_id = event['challenge']['id']
-            self.client.bots.accept_challenge(challenge_id)
+            self.accept_challenge(challenge_id)
         elif event['type'] == 'gameStart':
             game_id = event['game']['id']
             game = Game(client=self.client,
@@ -35,8 +45,7 @@ class ChessBot:
 
     def run(self):
         logger.info(f'{self.__class__.__name__} started.')
-        events = self.client.bots.stream_incoming_events()
-        for event in events:
+        for event in self._events():
             logger.info(event)
             self._handle_event(event)
 
