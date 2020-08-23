@@ -1,0 +1,11 @@
+berserk==0.10.0
+certifi==2020.6.20
+chardet==3.0.4
+Deprecated==1.2.10
+idna==2.10
+ndjson==0.3.1
+python-chess==0.31.4
+requests==2.24.0
+stockfish==3.10.2
+urllib3==1.25.10
+wrapt==1.12.1
