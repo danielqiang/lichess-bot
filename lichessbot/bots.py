@@ -4,6 +4,7 @@ import stockfish
 import logging
 import chess
 import random
+import abc
 
 from typing import Generator
 from .game import Game
@@ -11,8 +12,8 @@ from .game import Game
 logger = logging.getLogger(__name__)
 
 
-class ChessBot:
-    """Base class for all chess bots. Must override
+class ChessBot(abc.ABC):
+    """Abstract base class for all chess bots. Must override
     select_move() in subclass.
     """
     def __init__(self, api_key: str):
@@ -23,6 +24,7 @@ class ChessBot:
     def accept_challenge(self, challenge_id):
         self.client.bots.accept_challenge(challenge_id)
 
+    @abc.abstractmethod
     def select_move(self, board: chess.Board) -> str:
         """chess.Board object -> UCI move string"""
         raise NotImplementedError
